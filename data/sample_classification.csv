@@ -1,0 +1,5 @@
+tumor,type,tissue,sample_type
+ALL,Control,Acute Lymphoblastic Leukemia,Primary Blood Derived Cancer - Bone Marrow
+ALL,Case,Acute Lymphoblastic Leukemia,Recurrent Blood Derived Cancer - Bone Marrow
+AML,Control,Acute Myeloid Leukemia,Primary Blood Derived Cancer - Bone Marrow
+AML,Case,Acute Myeloid Leukemia,Recurrent Blood Derived Cancer - Bone Marrow
