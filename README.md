@@ -2,5 +2,5 @@
 
 Transcriptomic analysis on leukemias.
 
-- [Overview of samples](doc/input_overview.ipynb)
-- [Overview of switches](doc/leukemias.ipynb)
+- [A priori study of the samples](doc/input_overview.ipynb)
+- [Switch recurrence](doc/recurrence.ipynb)
