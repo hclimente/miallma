@@ -39,9 +39,10 @@ process relabel_tumors {
 
 }
 
+process get_gtf {
 
 	output:
-	
+		file 'gtf' into gtf
 
 	'''
 	wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_23/gencode.v23.annotation.gtf.gz
