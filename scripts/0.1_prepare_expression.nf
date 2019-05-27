@@ -3,41 +3,15 @@
 params.data = "../data/"
 data = params.data
 
-tx_expression = file("${data}rna-seq/TcgaTargetGtex_rsem_isoform_tpm")
-tumor_samples = file("${data}sample_classification.csv")
-sample_info = file("${data}rna-seq/TcgaTargetGTEX_phenotype.txt")
+tx_expression = file("${data}target_phases1_2.tsv")
+sample_info = file("${data}sample_info.tsv")
 
 tumors = Channel
-		.from(tumor_samples)
+		.from(sample_info)
 		.splitCsv(header: true)
 		.map { row -> row.tumor }
 		.unique()
 origins = ["Control", "Case"]
-
-process relabel_tumors {
-
-	input:
-		file sample_info
-		file tumor_samples
-
-	output:
-		file "samples_relabeled.tsv" into relabeledSamples
-
-	"""
-	#!/usr/bin/env Rscript
-
-	library(tidyverse)
-	library(magrittr)
-
-	tumor_samples <- read_csv("$tumor_samples")
-	samples <- read_tsv("$sample_info" , col_types = "cccccc") %>%
-		set_colnames(c("sample", "tissue", "primary_site", "sample_type", "gender", "study")) %>%
-		inner_join(tumor_samples) %>%
-		select(sample, tumor, type) %>%
-		write_tsv("samples_relabeled.tsv")
-	"""
-
-}
 
 process get_gtf {
 
@@ -114,7 +88,7 @@ process get_tumor_expression {
 	input:
 		each tumor from tumors
 		each origin from origins
-		file relabeledSamples
+		file sample_info 
 		file sortedTxExpression
 
 	output:
