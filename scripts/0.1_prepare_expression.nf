@@ -99,7 +99,7 @@ process get_tumor_expression {
 
 	library(tidyverse)
 
-	tumorSamples <- read_tsv("$relabeledSamples") %>%
+	tumorSamples <- read_tsv("$sample_info") %>%
 		filter(tumor == "$tumor" & type == "$origin") %>%
 		.\$sample
 

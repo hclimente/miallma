@@ -6,7 +6,7 @@ params.out = "./"
 out = params.out
 
 samples = file("$data/sample_classification.csv")
-network = file("$data/gencode_v23.pklz")
+network = file("$data/gencode_v27.pklz")
 ddi = file("$data/ddi.tsv")
 drivers = file("$data/mutational_drivers.tsv")
 expression = file("$data/expression")
