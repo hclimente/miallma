@@ -4,14 +4,11 @@ params.data = "../data/"
 data = params.data
 
 tx_expression = file("${data}target_phases1_2.tsv")
-sample_info = file("${data}sample_info.tsv")
+sample_info = file("${data}master_info_ALL_v4.txt")
 
-tumors = Channel
-		.from(sample_info)
-		.splitCsv(header: true)
-		.map { row -> row.tumor }
-		.unique()
-origins = ["Control", "Case"]
+tumors = ['ALL']
+projects = ['TARGET_other','TARGET_phase1','TARGET_phase2_dc','TARGET_phase2_di', 'TARGET_phase2_vl']
+origins = ['DX', 'RL']
 
 process get_gtf {
 
@@ -87,12 +84,13 @@ process get_tumor_expression {
 
 	input:
 		each tumor from tumors
+    each project from projects
 		each origin from origins
-		file sample_info 
+		file sample_info
 		file sortedTxExpression
 
 	output:
-		file "${tumor}_${origin}_isoform_tpm.tsv" into tumor_tx_expression
+		file "${tumor}_${project}_${origin}_isoform_tpm.tsv" into tumor_tx_expression
 
 	"""
 	#!/usr/bin/env Rscript
@@ -100,15 +98,15 @@ process get_tumor_expression {
 	library(tidyverse)
 
 	tumorSamples <- read_tsv("$sample_info") %>%
-		filter(tumor == "$tumor" & type == "$origin") %>%
-		.\$sample
+		filter(Type == "$tumor" & DX_RL == "$origin" & Project == '$project') %>%
+		.\$Sample_ID
 
 	allSamples <- read_tsv("$tx_expression", n_max = 1) %>% colnames
 
 	cols <- which(allSamples %in% tumorSamples) %>% paste(collapse = ",") %>% paste0("-f1,", .)
 
 	system2("cut", args = c(cols, "$tx_expression"), stdout = "tmp")
-	system2('sed', args = c("'s/^sample/transcript/'", 'tmp'), stdout = "${tumor}_${origin}_isoform_tpm.tsv")
+	system2('sed', args = c("'s/^sample/transcript/'", 'tmp'), stdout = "${tumor}_${project}_${origin}_isoform_tpm.tsv")
 	"""
 
 }

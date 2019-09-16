@@ -5,7 +5,6 @@ data = params.data
 params.out = "./"
 out = params.out
 
-samples = file("$data/sample_classification.csv")
 network = file("$data/gencode_v27.pklz")
 ddi = file("$data/ddi.tsv")
 drivers = file("$data/mutational_drivers.tsv")
@@ -14,12 +13,8 @@ d1 = file("$data/d1.txt")
 
 // COMPUTE TRANS SWITCHES
 ////////////////////////////////////////
-tumors = Channel
-		.from(samples)
-		.splitCsv(header: true)
-		.filter { it.Tumor != "" }
-		.map { row -> row.tumor }
-		.unique()
+tumors = ['ALL']
+projects = ['TARGET_other','TARGET_phase1','TARGET_phase2_dc','TARGET_phase2_di', 'TARGET_phase2_vl']
 
 process calculate_trans_switches {
 
@@ -27,17 +22,18 @@ process calculate_trans_switches {
 
 	input:
 		each tumor from tumors
+    each project from projects
 		file "annotation_tumor.pklz" from network
 		file expression
 
 	output:
-		set tumor,'switches_spada.tsv',"annotation_${tumor}.pklz" into switches
+		set tumor, project,'switches_spada.tsv',"annotation_${tumor}.pklz" into switches
 
 	"""
 	spada init --name ${tumor} --annotation annotation_tumor.pklz
 	spada switches --minimum-expression 0.1 \
---expression-control $expression/${tumor}_Control_isoform_tpm.tsv \
---expression-case $expression/${tumor}_Case_isoform_tpm.tsv
+--expression-control $expression/${tumor}_${project}_DX_isoform_tpm.tsv \
+--expression-case $expression/${tumor}_${project}_RL_isoform_tpm.tsv
 	mv annotation.pklz annotation_${tumor}.pklz
 	"""
 
@@ -53,7 +49,7 @@ process functional_analysis {
 	publishDir "$out/$tumor", overwrite: true, mode: "copy"
 
 	input:
-		set val(tumor), file('switches.tsv'), file('annotation.pklz') from functional
+		set val(tumor), val(project), file('switches.tsv'), file('annotation.pklz') from functional
 
 	output:
 		file 'pfam_analysis.tsv'
@@ -71,17 +67,17 @@ process summary {
 	publishDir "$out/$tumor", overwrite: true, mode: "copy"
 
 	input:
-		set val(tumor), file('switches.tsv'), file('annotation.pklz') from summary
+		set val(tumor), val(project), file('switches.tsv'), file('annotation.pklz') from summary
 		file expression
 
 	output:
-		set val(tumor), 'switches_spada.tsv' into spada_switches
+		set tumor, project, 'switches_spada.tsv' into spada_switches
 		file 'proteome_features.tsv'
 
 	"""
 	spada summary --switches switches.tsv --minimum-expression 0.1 \
---expression-control $expression/${tumor}_Control_isoform_tpm.tsv \
---expression-case $expression/${tumor}_Case_isoform_tpm.tsv
+--expression-control $expression/${tumor}_${project}_DX_isoform_tpm.tsv \
+--expression-case $expression/${tumor}_${project}_RL_isoform_tpm.tsv
 	"""
 
 }
@@ -93,7 +89,7 @@ process driver_annotation {
 	publishDir "$out/$tumor", overwrite: true, mode: "copy"
 
 	input:
-		set val(tumor), file('switches.tsv') from spada_switches
+		set val(tumor), val(project), file('switches.tsv') from spada_switches
 		file d1
 		file drivers
 
