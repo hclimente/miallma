@@ -18,11 +18,11 @@ projects = ['TARGET_other','TARGET_phase1','TARGET_phase2_dc','TARGET_phase2_di'
 
 process calculate_trans_switches {
 
-	publishDir "$out/$tumor", overwrite: true, mode: "copy"
+	publishDir "${out}/${tumor}_${project}", overwrite: true, mode: "copy"
 
 	input:
 		each tumor from tumors
-    each project from projects
+		each project from projects
 		file "annotation_tumor.pklz" from network
 		file expression
 
@@ -46,7 +46,7 @@ switches .into { functional; summary }
 process functional_analysis {
 
 	memory = '15GB'
-	publishDir "$out/$tumor", overwrite: true, mode: "copy"
+	publishDir "${out}/${tumor}_${project}", overwrite: true, mode: "copy"
 
 	input:
 		set val(tumor), val(project), file('switches.tsv'), file('annotation.pklz') from functional
@@ -64,7 +64,7 @@ process functional_analysis {
 
 process summary {
 
-	publishDir "$out/$tumor", overwrite: true, mode: "copy"
+	publishDir "${out}/${tumor}_${project}", overwrite: true, mode: "copy"
 
 	input:
 		set val(tumor), val(project), file('switches.tsv'), file('annotation.pklz') from summary
@@ -86,7 +86,7 @@ process summary {
 ////////////////////////////////////////
 process driver_annotation {
 
-	publishDir "$out/$tumor", overwrite: true, mode: "copy"
+	publishDir "${out}/${tumor}_${project}", overwrite: true, mode: "copy"
 
 	input:
 		set val(tumor), val(project), file('switches.tsv') from spada_switches
